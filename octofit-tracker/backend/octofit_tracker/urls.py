@@ -16,6 +16,8 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
+from django.http import JsonResponse
+import os
 from . import views
 
 router = DefaultRouter()
@@ -25,8 +27,19 @@ router.register(r'activities', views.ActivityViewSet)
 router.register(r'workouts', views.WorkoutViewSet)
 router.register(r'leaderboard', views.LeaderboardViewSet)
 
+def api_root_dynamic(request):
+    CODESPACE_NAME = os.environ.get('CODESPACE_NAME', '')
+    base_url = f"https://{CODESPACE_NAME}-8000.app.github.dev" if CODESPACE_NAME else "http://localhost:8000"
+    return JsonResponse({
+        "activities": f"{base_url}/api/activities/",
+        "users": f"{base_url}/api/users/",
+        "teams": f"{base_url}/api/teams/",
+        "leaderboard": f"{base_url}/api/leaderboard/",
+        "workouts": f"{base_url}/api/workouts/"
+    })
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include(router.urls)),
-    path('', views.api_root, name='api_root'),
+    path('', api_root_dynamic, name='api_root'),
 ]
